@@ -1,8 +1,28 @@
-# Coffee Kura v1.3
+# Coffee Kura
 
-## v1.3
+Coffee Kuraは、豆カードを中心に、自宅で淹れた一杯とカフェで飲んだ一杯を記録し、自分のコーヒーの好みを知るためのモバイル向けWebアプリです。
+
+## 主な機能
+
+- 豆カードの追加・編集・削除
+- 豆に紐づくBrew記録
+- カフェで飲んだ一杯の記録
+- 写真の複数保存
+- 酸味・苦味・甘味・コク・香り・総合評価
+- リピート判定
+- Insightsによる簡易分析
+- IndexedDBへの端末内保存
+- JSONバックアップ・復元
+- GitHub Pagesでの公開
+
+## 更新履歴
+
+### v1.3
+
+入力・編集・データ保護を中心に改善しました。
+
 - Bean / Brew / Cafeの日付をiPhone標準カレンダーで入力
-- 表示はYYYY/MM/DD、内部保存はYYYY-MM-DD
+- 表示は `YYYY/MM/DD`、内部保存は `YYYY-MM-DD`
 - 未保存フォームから戻る際の確認
 - 必須項目・負数・ブレンド産地数の入力検証
 - 登録済みロースターの再利用
@@ -13,10 +33,34 @@
 - 保存完了トースト
 - バックアップ最終日時、記録件数、写真枚数、概算容量
 - 旧データを新形式へ自動移行
-- GitHub Actionsは公開npmレジストリを明示
+- GitHub Actionsで公開npmレジストリを明示
+
+### v1.2
+
+日付入力をiPhone標準のカレンダー選択へ変更しました。  
+保存形式と画面表示形式を分離し、日付の入力ミスを防ぐ設計にしました。
+
+### v1.1
+
+複数画像、登録済みカフェの再利用、ブレンド産地の複数選択を追加しました。  
+Bean / Brew / Cafeの編集機能と、旧データ・旧バックアップとの互換性も強化しました。
+
+### v1.0
+
+Bean → Brew → Insightsの基本フローを実装しました。  
+Cafe記録、IndexedDB保存、写真、評価、バックアップ・復元までを含む最初のMVPです。
+
+## 技術構成
+
+- Vite
+- React
+- TypeScript
+- Tailwind CSS
+- IndexedDB
+- GitHub Pages
 
 ## Build
+
 ```bash
 npm install --registry=https://registry.npmjs.org/ --no-audit --no-fund
 npm run build
-```
