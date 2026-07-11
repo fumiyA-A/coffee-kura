@@ -9,6 +9,13 @@ export type Brew = {
   waterAmount?: number;
   waterTemperature?: number;
   brewTimeSeconds?: number;
+  grindSize?: string;
+  photo?: Blob;
+  acidity?: Rating;
+  bitterness?: Rating;
+  sweetness?: Rating;
+  body?: Rating;
+  aroma?: Rating;
   overallRating?: Rating;
   repeatStatus?: RepeatStatus;
   memo?: string;

@@ -5,8 +5,16 @@ export type CafeCup = {
   cafeName?: string;
   drinkName: string;
   origin?: string;
+  roastLevel?: string;
   price?: number;
+  date: string;
+  locationName?: string;
   photo?: Blob;
+  acidity?: Rating;
+  bitterness?: Rating;
+  sweetness?: Rating;
+  body?: Rating;
+  aroma?: Rating;
   overallRating?: Rating;
   repeatStatus?: RepeatStatus;
   memo?: string;

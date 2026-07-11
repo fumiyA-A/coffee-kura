@@ -1,30 +1,32 @@
 export type Route =
   | { name: "beans" }
   | { name: "bean-new" }
-  | { name: "bean-detail"; beanId: string }
+  | { name: "bean-detail"; id: string }
+  | { name: "bean-edit"; id: string }
+  | { name: "brew-new"; beanId: string }
   | { name: "cafe" }
+  | { name: "cafe-new" }
+  | { name: "cafe-detail"; id: string }
   | { name: "insights" }
   | { name: "settings" };
 
 export function parseRoute(): Route {
-  const raw = window.location.hash.replace(/^#\/?/, "");
-  const parts = raw.split("/").filter(Boolean);
+  const p = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
 
-  if (parts[0] === "beans" && parts[1] === "new") {
-    return { name: "bean-new" };
+  if (p[0] === "beans" && p[1] === "new") return { name: "bean-new" };
+  if (p[0] === "beans" && p[1] && p[2] === "edit") return { name: "bean-edit", id: p[1] };
+  if (p[0] === "beans" && p[1] && p[2] === "brews" && p[3] === "new") {
+    return { name: "brew-new", beanId: p[1] };
   }
-
-  if (parts[0] === "beans" && parts[1]) {
-    return { name: "bean-detail", beanId: parts[1] };
-  }
-
-  if (parts[0] === "cafe") return { name: "cafe" };
-  if (parts[0] === "insights") return { name: "insights" };
-  if (parts[0] === "settings") return { name: "settings" };
-
+  if (p[0] === "beans" && p[1]) return { name: "bean-detail", id: p[1] };
+  if (p[0] === "cafe" && p[1] === "new") return { name: "cafe-new" };
+  if (p[0] === "cafe" && p[1]) return { name: "cafe-detail", id: p[1] };
+  if (p[0] === "cafe") return { name: "cafe" };
+  if (p[0] === "insights") return { name: "insights" };
+  if (p[0] === "settings") return { name: "settings" };
   return { name: "beans" };
 }
 
-export function navigate(path: string): void {
+export function navigate(path: string) {
   window.location.hash = path.startsWith("/") ? path : `/${path}`;
 }

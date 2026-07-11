@@ -3,21 +3,15 @@ import type { Route } from "./routes";
 import { Header } from "../components/layout/Header";
 import { BottomNavigation } from "../components/layout/BottomNavigation";
 
-type Props = PropsWithChildren<{ route: Route }>;
-
-export function AppLayout({ route, children }: Props) {
-  const hideBottomNav =
-    route.name === "bean-new" ||
-    route.name === "bean-detail" ||
-    route.name === "settings";
-
+export function AppLayout({ route, children }: PropsWithChildren<{ route: Route }>) {
+  const root = ["beans", "cafe", "insights"].includes(route.name);
   return (
     <div className="mx-auto min-h-dvh max-w-xl bg-[#171513] shadow-2xl">
       <Header route={route} />
-      <main className={`px-5 pt-5 ${hideBottomNav ? "pb-10" : "pb-28"}`}>
+      <main className={`fade-in px-5 pt-5 ${root ? "pb-28" : "pb-10"}`}>
         {children}
       </main>
-      {!hideBottomNav && <BottomNavigation activeRoute={route.name} />}
+      {root && <BottomNavigation active={route.name as "beans" | "cafe" | "insights"} />}
     </div>
   );
 }

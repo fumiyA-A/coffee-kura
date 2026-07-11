@@ -5,8 +5,7 @@ export const STORES = {
   beans: "beans",
   brews: "brews",
   cafeCups: "cafe-cups",
-  roasters: "roasters",
-  settings: "settings",
+  settings: "settings"
 } as const;
 
 let databasePromise: Promise<IDBDatabase> | undefined;
@@ -23,11 +22,10 @@ export function initializeDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(DATABASE_NAME, DATABASE_VERSION);
 
     request.onupgradeneeded = () => {
-      const database = request.result;
-
-      Object.values(STORES).forEach((storeName) => {
-        if (!database.objectStoreNames.contains(storeName)) {
-          database.createObjectStore(storeName, { keyPath: "id" });
+      const db = request.result;
+      Object.values(STORES).forEach((name) => {
+        if (!db.objectStoreNames.contains(name)) {
+          db.createObjectStore(name, { keyPath: "id" });
         }
       });
     };
@@ -39,19 +37,32 @@ export function initializeDatabase(): Promise<IDBDatabase> {
   return databasePromise;
 }
 
-export async function runTransaction<T>(
+export async function requestFromStore<T>(
   storeName: string,
   mode: IDBTransactionMode,
-  operation: (store: IDBObjectStore) => IDBRequest<T>,
+  factory: (store: IDBObjectStore) => IDBRequest<T>,
 ): Promise<T> {
-  const database = await initializeDatabase();
-
+  const db = await initializeDatabase();
   return new Promise((resolve, reject) => {
-    const transaction = database.transaction(storeName, mode);
-    const request = operation(transaction.objectStore(storeName));
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-    transaction.onerror = () => reject(transaction.error);
+    const tx = db.transaction(storeName, mode);
+    const req = factory(tx.objectStore(storeName));
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+    tx.onerror = () => reject(tx.error);
   });
+}
+
+export async function clearAllStores(): Promise<void> {
+  const db = await initializeDatabase();
+  await Promise.all(
+    Object.values(STORES).map(
+      (storeName) =>
+        new Promise<void>((resolve, reject) => {
+          const tx = db.transaction(storeName, "readwrite");
+          const req = tx.objectStore(storeName).clear();
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        }),
+    ),
+  );
 }

@@ -1,65 +1,39 @@
 import type { Route } from "../../app/routes";
 import { navigate } from "../../app/routes";
 
-function titleForRoute(route: Route): string {
+function title(route: Route) {
   switch (route.name) {
-    case "bean-new":
-      return "豆カードを追加";
-    case "bean-detail":
-      return "豆カード";
-    case "cafe":
-      return "カフェの記録";
-    case "insights":
-      return "Insights";
-    case "settings":
-      return "設定";
-    default:
-      return "Coffee Kura";
+    case "bean-new": return "豆カードを追加";
+    case "bean-edit": return "豆カードを編集";
+    case "bean-detail": return "豆カード";
+    case "brew-new": return "一杯を記録";
+    case "cafe-new": return "カフェの一杯を追加";
+    case "cafe-detail": return "カフェの一杯";
+    case "cafe": return "カフェの記録";
+    case "insights": return "Insights";
+    case "settings": return "設定";
+    default: return "Coffee Kura";
   }
 }
 
-function isSubPage(route: Route): boolean {
-  return (
-    route.name === "bean-new" ||
-    route.name === "bean-detail" ||
-    route.name === "settings"
-  );
+function backPath(route: Route) {
+  if (route.name === "brew-new") return `/beans/${route.beanId}`;
+  if (route.name === "bean-edit") return `/beans/${route.id}`;
+  if (route.name === "cafe-new" || route.name === "cafe-detail") return "/cafe";
+  return "/beans";
 }
 
 export function Header({ route }: { route: Route }) {
-  const subPage = isSubPage(route);
-
+  const root = ["beans", "cafe", "insights"].includes(route.name);
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/5 bg-[#171513]/95 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur">
-      {subPage ? (
-        <button
-          type="button"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-xl text-[#f5efe7]"
-          onClick={() => navigate("/beans")}
-          aria-label="戻る"
-        >
-          ←
-        </button>
-      ) : (
-        <div className="h-11 w-11" />
+      {root ? <div className="h-11 w-11" /> : (
+        <button className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-xl" onClick={() => navigate(backPath(route))} aria-label="戻る">←</button>
       )}
-
-      <h1 className="font-serif text-2xl tracking-wide text-[#f5efe7]">
-        {titleForRoute(route)}
-      </h1>
-
-      {!subPage ? (
-        <button
-          type="button"
-          className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-xl text-[#d4a04f]"
-          onClick={() => navigate("/settings")}
-          aria-label="設定を開く"
-        >
-          ⚙
-        </button>
-      ) : (
-        <div className="h-11 w-11" />
-      )}
+      <h1 className="font-serif text-2xl tracking-wide">{title(route)}</h1>
+      {root ? (
+        <button className="grid h-11 w-11 place-items-center rounded-full border border-white/10 text-xl text-[#d4a04f]" onClick={() => navigate("/settings")} aria-label="設定">⚙</button>
+      ) : <div className="h-11 w-11" />}
     </header>
   );
 }

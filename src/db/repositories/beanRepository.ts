@@ -1,28 +1,11 @@
 import type { Bean } from "../../models/Bean";
-import { runTransaction, STORES } from "../database";
+import { STORES } from "../database";
+import { getAll, getById, put, remove } from "./genericRepository";
 
 export async function getAllBeans(): Promise<Bean[]> {
-  const result = await runTransaction<Bean[]>(
-    STORES.beans,
-    "readonly",
-    (store) => store.getAll(),
-  );
-
-  return result.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const rows = await getAll<Bean>(STORES.beans);
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
-
-export async function getBean(id: string): Promise<Bean | undefined> {
-  return runTransaction<Bean | undefined>(
-    STORES.beans,
-    "readonly",
-    (store) => store.get(id),
-  );
-}
-
-export async function saveBean(bean: Bean): Promise<IDBValidKey> {
-  return runTransaction<IDBValidKey>(
-    STORES.beans,
-    "readwrite",
-    (store) => store.put(bean),
-  );
-}
+export const getBean = (id: string) => getById<Bean>(STORES.beans, id);
+export const saveBean = (bean: Bean) => put(STORES.beans, bean);
+export const deleteBean = (id: string) => remove(STORES.beans, id);
