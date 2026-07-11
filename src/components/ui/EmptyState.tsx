@@ -1,3 +1,4 @@
+import { navigate } from "../../app/routes";
 import { KuraCard } from "./KuraCard";
 
 type Props = {
@@ -5,6 +6,7 @@ type Props = {
   title: string;
   description: string;
   actionLabel?: string;
+  actionPath?: string;
 };
 
 export function EmptyState({
@@ -12,6 +14,7 @@ export function EmptyState({
   title,
   description,
   actionLabel,
+  actionPath,
 }: Props) {
   return (
     <KuraCard>
@@ -22,11 +25,11 @@ export function EmptyState({
       <p className="mt-3 whitespace-pre-line leading-7 text-[#aaa198]">
         {description}
       </p>
-      {actionLabel && (
+      {actionLabel && actionPath && (
         <button
           type="button"
           className="mt-6 w-full rounded-2xl bg-[#d4a04f] px-5 py-4 font-semibold text-[#1e1914]"
-          onClick={() => window.alert("次の実装で追加フォームを作ります。")}
+          onClick={() => navigate(actionPath)}
         >
           ＋ {actionLabel}
         </button>

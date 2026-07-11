@@ -9,8 +9,12 @@ export const STORES = {
   settings: "settings",
 } as const;
 
+let databasePromise: Promise<IDBDatabase> | undefined;
+
 export function initializeDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
+  if (databasePromise) return databasePromise;
+
+  databasePromise = new Promise((resolve, reject) => {
     if (!("indexedDB" in window)) {
       reject(new Error("このブラウザはIndexedDBに対応していません。"));
       return;
@@ -30,5 +34,24 @@ export function initializeDatabase(): Promise<IDBDatabase> {
 
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
+  });
+
+  return databasePromise;
+}
+
+export async function runTransaction<T>(
+  storeName: string,
+  mode: IDBTransactionMode,
+  operation: (store: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> {
+  const database = await initializeDatabase();
+
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(storeName, mode);
+    const request = operation(transaction.objectStore(storeName));
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+    transaction.onerror = () => reject(transaction.error);
   });
 }

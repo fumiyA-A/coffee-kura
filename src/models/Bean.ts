@@ -3,14 +3,12 @@ import type { Rating, RepeatStatus } from "./enums";
 export type Bean = {
   id: string;
   name: string;
-  roasterId?: string;
+  roaster?: string;
   origin?: string;
+  roastLevel?: string;
+  price?: number;
+  weight?: number;
   photo?: Blob;
-  acidity?: Rating;
-  bitterness?: Rating;
-  sweetness?: Rating;
-  body?: Rating;
-  aroma?: Rating;
   overallRating?: Rating;
   repeatStatus?: RepeatStatus;
   memo?: string;
