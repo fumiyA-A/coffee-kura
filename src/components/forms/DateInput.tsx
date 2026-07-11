@@ -1,5 +1,3 @@
-import { toSlashDate } from "../../utils/date";
-
 export function DateInput({
   label = "日付",
   value,
@@ -17,28 +15,13 @@ export function DateInput({
         {label}
       </span>
 
-      <div className="relative">
-        {/* ユーザーに見せる表示 */}
-        <div
-          className="pointer-events-none flex w-full items-center justify-between rounded-2xl border border-white/10 bg-[#201d1a] px-4 py-4 text-left"
-          aria-hidden="true"
-        >
-          <span className={value ? "text-[#f5efe7]" : "text-[#716a64]"}>
-            {value ? toSlashDate(value) : "YYYY/MM/DD"}
-          </span>
-
-          <span className="text-xl text-[#d4a04f]">▣</span>
-        </div>
-
-        {/* 実際にiPhoneが直接タップを受け取る入力欄 */}
-        <input
-          type="date"
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          aria-label={label}
-          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
-        />
-      </div>
+      <input
+        type="date"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-label={label}
+        className="block w-full cursor-pointer rounded-2xl border border-white/10 bg-[#201d1a] px-4 py-4 text-[#f5efe7] outline-none focus:border-[#d4a04f]/70"
+      />
 
       {optional && value && (
         <button
