@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI",
+    "Noto Sans JP", sans-serif;
+  background: #171513;
+  color: #f5efe7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(188, 139, 67, 0.08), transparent 38%),
+    #171513;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.safe-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
