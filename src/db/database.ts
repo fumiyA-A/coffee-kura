@@ -1,10 +1,11 @@
 const DATABASE_NAME = "coffee-kura";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 
 export const STORES = {
   beans: "beans",
   brews: "brews",
   cafeCups: "cafe-cups",
+  cafes: "cafes",
   settings: "settings"
 } as const;
 

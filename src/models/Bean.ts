@@ -1,9 +1,12 @@
-import type { Rating, RepeatStatus } from "./enums";
+import type { OriginType, Rating, RepeatStatus } from "./enums";
 
 export type Bean = {
   id: string;
   name: string;
   roaster?: string;
+  originType?: OriginType;
+  origins?: string[];
+  originDetail?: string;
   origin?: string;
   roastLevel?: string;
   process?: string;
@@ -12,6 +15,7 @@ export type Bean = {
   price?: number;
   weight?: number;
   isGround?: boolean;
+  photos?: Blob[];
   photo?: Blob;
   acidity?: Rating;
   bitterness?: Rating;

@@ -29,7 +29,9 @@ export default function App() {
     case "bean-edit": page = <BeanFormPage beanId={route.id} />; break;
     case "bean-detail": page = <BeanDetailPage beanId={route.id} />; break;
     case "brew-new": page = <BrewFormPage beanId={route.beanId} />; break;
+    case "brew-edit": page = <BrewFormPage beanId={route.beanId} brewId={route.brewId} />; break;
     case "cafe-new": page = <CafeFormPage />; break;
+    case "cafe-edit": page = <CafeFormPage cafeCupId={route.id} />; break;
     case "cafe-detail": page = <CafeDetailPage id={route.id} />; break;
     case "cafe": page = <CafePage />; break;
     case "insights": page = <InsightsPage />; break;

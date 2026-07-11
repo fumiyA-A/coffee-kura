@@ -16,18 +16,25 @@ function average(values: Array<number | undefined>): number | undefined {
   return valid.reduce((sum, value) => sum + value, 0) / valid.length;
 }
 
+function beanOrigins(bean: Bean): string[] {
+  if (bean.origins?.length) return bean.origins;
+  return bean.origin ? [bean.origin] : [];
+}
+
 export function buildInsights(
   beans: Bean[],
   brews: Brew[],
   cafeCups: CafeCup[],
 ) {
+  const highRatedOrigins = beans
+    .filter((bean) => (bean.overallRating ?? 0) >= 4)
+    .flatMap(beanOrigins);
+
   return {
     beanCount: beans.length,
     brewCount: brews.length,
     cafeCount: cafeCups.length,
-    topOrigin: topValue(
-      beans.filter((b) => (b.overallRating ?? 0) >= 4).map((b) => b.origin),
-    ),
+    topOrigin: topValue(highRatedOrigins),
     topRoast: topValue(
       beans.filter((b) => (b.overallRating ?? 0) >= 4).map((b) => b.roastLevel),
     ),

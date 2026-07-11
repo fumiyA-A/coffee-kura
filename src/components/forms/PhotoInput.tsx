@@ -1,28 +1,101 @@
 import { useEffect, useRef, useState } from "react";
+import { compressImages } from "../../services/imageService";
 
-export function PhotoInput({ value, onChange }: { value?: Blob; onChange: (v?: Blob) => void }) {
+function Preview({ blob, onDelete }: { blob: Blob; onDelete: () => void }) {
   const [url, setUrl] = useState<string>();
-  const library = useRef<HTMLInputElement>(null);
-  const camera = useRef<HTMLInputElement>(null);
-
   useEffect(() => {
-    if (!value) { setUrl(undefined); return; }
-    const next = URL.createObjectURL(value); setUrl(next);
+    const next = URL.createObjectURL(blob);
+    setUrl(next);
     return () => URL.revokeObjectURL(next);
-  }, [value]);
+  }, [blob]);
 
-  return <div>
-    <span className="mb-2 block text-sm font-semibold text-[#cfc6bd]">写真</span>
-    <div className="overflow-hidden rounded-3xl border border-[#d4a04f]/25 bg-[#332a20]">
-      {url ? <img src={url} className="h-56 w-full object-cover" alt="選択した写真" /> :
-        <div className="grid h-44 place-items-center text-center text-[#d4a04f]"><div><div className="text-4xl">▧＋</div><div>写真を追加</div></div></div>}
-      <div className="grid grid-cols-2 gap-2 p-3">
-        <button type="button" onClick={() => library.current?.click()} className="rounded-xl bg-[#d4a04f] px-3 py-3 font-semibold text-[#1e1914]">アルバム</button>
-        <button type="button" onClick={() => camera.current?.click()} className="rounded-xl border border-[#d4a04f]/40 px-3 py-3 text-[#e0ae5e]">カメラ</button>
-      </div>
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-[#332a20]">
+      {url && <img src={url} className="h-32 w-full object-cover" alt="選択画像" />}
+      <button
+        type="button"
+        onClick={onDelete}
+        className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-black/70 text-white"
+        aria-label="画像を削除"
+      >
+        ×
+      </button>
     </div>
-    <input ref={library} className="hidden" type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0])} />
-    <input ref={camera} className="hidden" type="file" accept="image/*" capture="environment" onChange={(e) => onChange(e.target.files?.[0])} />
-    {value && <button type="button" onClick={() => onChange(undefined)} className="mt-2 text-sm text-[#aaa198]">写真を削除</button>}
-  </div>;
+  );
+}
+
+export function PhotoInput({
+  value,
+  onChange,
+}: {
+  value: Blob[];
+  onChange: (value: Blob[]) => void;
+}) {
+  const albumRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const [processing, setProcessing] = useState(false);
+
+  async function append(files?: FileList | null) {
+    if (!files?.length) return;
+    setProcessing(true);
+    const compressed = await compressImages(files);
+    onChange([...value, ...compressed]);
+    setProcessing(false);
+  }
+
+  return (
+    <div>
+      <span className="mb-2 block text-sm font-semibold text-[#cfc6bd]">
+        写真（複数可）
+      </span>
+
+      {value.length > 0 && (
+        <div className="mb-3 grid grid-cols-2 gap-3">
+          {value.map((blob, index) => (
+            <Preview
+              key={`${blob.size}-${index}`}
+              blob={blob}
+              onDelete={() => onChange(value.filter((_, i) => i !== index))}
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => albumRef.current?.click()}
+          className="rounded-xl bg-[#d4a04f] px-3 py-3 font-semibold text-[#1e1914]"
+        >
+          アルバムから追加
+        </button>
+        <button
+          type="button"
+          onClick={() => cameraRef.current?.click()}
+          className="rounded-xl border border-[#d4a04f]/40 px-3 py-3 text-[#e0ae5e]"
+        >
+          カメラで追加
+        </button>
+      </div>
+
+      {processing && <p className="mt-2 text-sm text-[#aaa198]">画像を処理中...</p>}
+
+      <input
+        ref={albumRef}
+        className="hidden"
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={(event) => void append(event.target.files)}
+      />
+      <input
+        ref={cameraRef}
+        className="hidden"
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={(event) => void append(event.target.files)}
+      />
+    </div>
+  );
 }
