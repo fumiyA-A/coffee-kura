@@ -10,7 +10,7 @@ export function DateInput({
   optional?: boolean;
 }) {
   return (
-    <div className="block">
+    <div className="block min-w-0 w-full">
       <span className="mb-2 block text-sm font-semibold text-[#cfc6bd]">
         {label}
       </span>
@@ -20,7 +20,23 @@ export function DateInput({
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={label}
-        className="block w-full cursor-pointer rounded-2xl border border-white/10 bg-[#201d1a] px-4 py-4 text-[#f5efe7] outline-none focus:border-[#d4a04f]/70"
+        className="
+          block
+          w-full
+          min-w-0
+          max-w-full
+          box-border
+          cursor-pointer
+          rounded-2xl
+          border
+          border-white/10
+          bg-[#201d1a]
+          px-4
+          py-4
+          text-[#f5efe7]
+          outline-none
+          focus:border-[#d4a04f]/70
+        "
       />
 
       {optional && value && (
