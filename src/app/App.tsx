@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { parseRoute, type Route } from "./routes";
 import { AppLayout } from "./AppLayout";
 import { initializeDatabase } from "../db/database";
+import { migrateLegacyData } from "../services/migrationService";
 import { BeansPage } from "../pages/BeansPage";
 import { BeanFormPage } from "../pages/BeanFormPage";
 import { BeanDetailPage } from "../pages/BeanDetailPage";
@@ -16,7 +17,7 @@ export default function App() {
   const [route, setRoute] = useState<Route>(parseRoute());
 
   useEffect(() => {
-    void initializeDatabase();
+    void initializeDatabase().then(() => migrateLegacyData());
     if (!window.location.hash) window.location.hash = "/beans";
     const handler = () => setRoute(parseRoute());
     window.addEventListener("hashchange", handler);

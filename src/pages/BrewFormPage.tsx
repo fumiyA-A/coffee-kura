@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { navigate } from "../app/routes";
-import { getBrew, saveBrew } from "../db/repositories/brewRepository";
+import { deleteBrew, getBrew, saveBrew } from "../db/repositories/brewRepository";
 import type { Brew } from "../models/Brew";
 import type { BrewMethod, Rating, RepeatStatus } from "../models/enums";
 import type { TasteValues } from "../components/forms/TasteProfileInput";
@@ -12,21 +12,23 @@ import { TasteProfileInput } from "../components/forms/TasteProfileInput";
 import { RatingInput } from "../components/forms/RatingInput";
 import { DateInput } from "../components/forms/DateInput";
 import { normalizePhotos } from "../services/imageService";
-import { slashDateToIso, todaySlash, toSlashDate } from "../utils/date";
+import { clearFormDirty, setFormDirty } from "../app/navigationGuard";
+import { showToast } from "../components/ui/Toast";
 
 export function BrewFormPage({ beanId, brewId }: { beanId: string; brewId?: string }) {
-  const [date,setDate]=useState(todaySlash()); const [method,setMethod]=useState<BrewMethod>("hand_drip");
+  const [date,setDate]=useState(new Date().toISOString().slice(0,10)); const [method,setMethod]=useState<BrewMethod>("hand_drip");
   const [beanAmount,setBeanAmount]=useState(""); const [waterAmount,setWaterAmount]=useState(""); const [temperature,setTemperature]=useState("");
   const [time,setTime]=useState(""); const [grind,setGrind]=useState(""); const [photos,setPhotos]=useState<Blob[]>([]);
   const [taste,setTaste]=useState<TasteValues>({}); const [overall,setOverall]=useState<Rating>(); const [repeat,setRepeat]=useState<RepeatStatus>("undecided");
   const [memo,setMemo]=useState(""); const [saving,setSaving]=useState(false); const [error,setError]=useState("");
   const [createdAt,setCreatedAt]=useState(new Date().toISOString());
 
+  useEffect(() => { setFormDirty(true); return () => setFormDirty(false); }, []);
   useEffect(() => {
     if (!brewId) return;
     void getBrew(brewId).then((brew) => {
       if (!brew) return;
-      setDate(toSlashDate(brew.date)); setMethod(brew.brewMethod);
+      setDate(brew.date); setMethod(brew.brewMethod);
       setBeanAmount(brew.beanAmount?.toString() ?? ""); setWaterAmount(brew.waterAmount?.toString() ?? "");
       setTemperature(brew.waterTemperature?.toString() ?? ""); setTime(brew.brewTimeSeconds?.toString() ?? "");
       setGrind(brew.grindSize ?? ""); setPhotos(normalizePhotos(brew));
@@ -37,15 +39,15 @@ export function BrewFormPage({ beanId, brewId }: { beanId: string; brewId?: stri
   }, [brewId]);
 
   async function save() {
-    const iso = slashDateToIso(date);
-    if (!iso) { setError("日付はYYYY/MM/DD形式で入力してください。"); return; }
+    const iso = date;
+    for (const [label,value] of [["豆量",beanAmount],["湯量",waterAmount],["温度",temperature],["時間",time]] as const) { if (value && Number(value) < 0) { setError(`${label}は0以上で入力してください。`); return; } }
     setSaving(true); const now=new Date().toISOString();
     const brew: Brew={ id:brewId ?? crypto.randomUUID(), beanId, date:iso, brewMethod:method,
       beanAmount:beanAmount?Number(beanAmount):undefined, waterAmount:waterAmount?Number(waterAmount):undefined,
       waterTemperature:temperature?Number(temperature):undefined, brewTimeSeconds:time?Number(time):undefined,
       grindSize:grind.trim()||undefined, photos, ...taste, overallRating:overall, repeatStatus:repeat,
       memo:memo.trim()||undefined, createdAt, updatedAt:now };
-    await saveBrew(brew); navigate(`/beans/${beanId}`);
+    await saveBrew(brew); clearFormDirty(); showToast("一杯の記録を保存しました"); navigate(`/beans/${beanId}`);
   }
 
   return <div className="space-y-5">
@@ -64,5 +66,5 @@ export function BrewFormPage({ beanId, brewId }: { beanId: string; brewId?: stri
       <KuraTextarea label="メモ" value={memo} onChange={setMemo}/></div></KuraCard>
     {error&&<p className="text-red-300">{error}</p>}
     <button disabled={saving} onClick={()=>void save()} className="sticky bottom-3 w-full rounded-2xl bg-[#d4a04f] px-5 py-4 font-semibold text-[#1e1914]">{saving?"保存中...":"保存"}</button>
-  </div>;
+  {brewId&&<button type="button" onClick={()=>{if(window.confirm("この一杯の記録を削除しますか？")) void deleteBrew(brewId).then(()=>{clearFormDirty();showToast("一杯の記録を削除しました");navigate(`/beans/${beanId}`);});}} className="w-full rounded-2xl border border-red-400/30 px-5 py-4 text-red-300">この一杯の記録を削除</button>}</div>;
 }

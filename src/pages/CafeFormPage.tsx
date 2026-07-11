@@ -15,18 +15,20 @@ import { RatingInput } from "../components/forms/RatingInput";
 import { OriginInput } from "../components/forms/OriginInput";
 import { DateInput } from "../components/forms/DateInput";
 import { normalizePhotos } from "../services/imageService";
-import { slashDateToIso, todaySlash, toSlashDate } from "../utils/date";
+import { clearFormDirty, setFormDirty } from "../app/navigationGuard";
+import { showToast } from "../components/ui/Toast";
 
 export function CafeFormPage({ cafeCupId }: { cafeCupId?: string }) {
   const [drinkName,setDrinkName]=useState(""); const [cafes,setCafes]=useState<Array<{id:string;name:string;locationName?:string}>>([]);
   const [selectedCafeId,setSelectedCafeId]=useState(""); const [newCafeName,setNewCafeName]=useState("");
   const [location,setLocation]=useState(""); const [origin,setOrigin]=useState<OriginValue>({originType:"unknown",origins:[],originDetail:""});
-  const [roast,setRoast]=useState(""); const [price,setPrice]=useState(""); const [date,setDate]=useState(todaySlash());
+  const [roast,setRoast]=useState(""); const [price,setPrice]=useState(""); const [date,setDate]=useState(new Date().toISOString().slice(0,10));
   const [photos,setPhotos]=useState<Blob[]>([]); const [taste,setTaste]=useState<TasteValues>({}); const [overall,setOverall]=useState<Rating>();
   const [repeat,setRepeat]=useState<RepeatStatus>("undecided"); const [memo,setMemo]=useState(""); const [error,setError]=useState("");
   const [createdAt,setCreatedAt]=useState(new Date().toISOString());
 
   useEffect(()=>{ void getAllCafes().then(setCafes); },[]);
+  useEffect(()=>{ setFormDirty(true); return ()=>setFormDirty(false); },[]);
   useEffect(()=>{
     if(!cafeCupId) return;
     void getCafeCup(cafeCupId).then((cup)=>{
@@ -38,7 +40,7 @@ export function CafeFormPage({ cafeCupId }: { cafeCupId?: string }) {
         origins:cup.origins?.length ? cup.origins : cup.origin ? [cup.origin] : [],
         originDetail:cup.originDetail ?? "",
       });
-      setRoast(cup.roastLevel ?? ""); setPrice(cup.price?.toString() ?? ""); setDate(toSlashDate(cup.date));
+      setRoast(cup.roastLevel ?? ""); setPrice(cup.price?.toString() ?? ""); setDate(cup.date);
       setPhotos(normalizePhotos(cup)); setTaste({acidity:cup.acidity,bitterness:cup.bitterness,sweetness:cup.sweetness,body:cup.body,aroma:cup.aroma});
       setOverall(cup.overallRating); setRepeat(cup.repeatStatus ?? "undecided"); setMemo(cup.memo ?? ""); setCreatedAt(cup.createdAt);
     });
@@ -46,7 +48,9 @@ export function CafeFormPage({ cafeCupId }: { cafeCupId?: string }) {
 
   async function save() {
     if (!drinkName.trim()) { setError("コーヒー名を入力してください。"); return; }
-    const iso=slashDateToIso(date); if(!iso){setError("日付はYYYY/MM/DD形式で入力してください。");return;}
+    if (price && Number(price) < 0) { setError("価格は0以上で入力してください。"); return; }
+    if (origin.originType === "blend" && origin.origins.length < 2) { setError("ブレンドは産地を2つ以上選んでください。"); return; }
+    const iso=date;
     let cafeId=selectedCafeId||undefined; let cafeName:string|undefined;
     if(selectedCafeId){
       cafeName=cafes.find(c=>c.id===selectedCafeId)?.name;
@@ -58,14 +62,14 @@ export function CafeFormPage({ cafeCupId }: { cafeCupId?: string }) {
       originType:origin.originType,origins:origin.origins,originDetail:origin.originDetail.trim()||undefined,
       roastLevel:roast||undefined,price:price?Number(price):undefined,date:iso,locationName:location.trim()||undefined,
       photos,...taste,overallRating:overall,repeatStatus:repeat,memo:memo.trim()||undefined,createdAt,updatedAt:now};
-    await saveCafeCup(cup); navigate(`/cafe/${cup.id}`);
+    await saveCafeCup(cup); clearFormDirty(); showToast("カフェの記録を保存しました"); navigate(`/cafe/${cup.id}`);
   }
 
   return <div className="space-y-5"><KuraCard><div className="space-y-5">
     <PhotoInput value={photos} onChange={setPhotos}/>
     <KuraInput label="コーヒー名（必須）" value={drinkName} onChange={setDrinkName} placeholder="例：本日のコーヒー"/>
     <label className="block"><span className="mb-2 block text-sm font-semibold text-[#cfc6bd]">お店</span>
-      <select value={selectedCafeId} onChange={(e)=>{setSelectedCafeId(e.target.value); if(e.target.value)setNewCafeName("");}} className="w-full rounded-2xl border border-white/10 bg-[#201d1a] px-4 py-4">
+      <select value={selectedCafeId} onChange={(e)=>{const id=e.target.value;setSelectedCafeId(id);if(id){setNewCafeName("");const selected=cafes.find(c=>c.id===id);if(selected?.locationName)setLocation(selected.locationName);}}} className="w-full rounded-2xl border border-white/10 bg-[#201d1a] px-4 py-4">
         <option value="">新しいお店を入力</option>{cafes.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
       </select></label>
     {!selectedCafeId&&<KuraInput label="新しいお店の名前" value={newCafeName} onChange={setNewCafeName} placeholder="一度保存すると次回から選べます"/>}

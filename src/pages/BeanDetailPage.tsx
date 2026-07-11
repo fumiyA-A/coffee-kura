@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { navigate } from "../app/routes";
 import { deleteBean, getBean } from "../db/repositories/beanRepository";
-import { getBrewsByBean } from "../db/repositories/brewRepository";
+import { deleteBrewsByBean, getBrewsByBean } from "../db/repositories/brewRepository";
 import { useData } from "../hooks/useData";
 import { KuraCard } from "../components/ui/KuraCard";
 import { ConfirmButton } from "../components/ui/ConfirmButton";
@@ -47,6 +47,6 @@ export function BeanDetailPage({ beanId }: { beanId: string }) {
       <button onClick={()=>navigate(`/beans/${bean.id}/brews/new`)} className="mt-5 w-full rounded-2xl bg-[#d4a04f] px-5 py-4 font-semibold text-[#1e1914]">＋ 一杯を記録</button>
       <div className="mt-4 space-y-3">{brews.length?brews.map(b=><BrewCard key={b.id} brew={b} onEdit={()=>navigate(`/beans/${bean.id}/brews/${b.id}`)}/>):<p className="text-[#aaa198]">まだ記録がありません。</p>}</div>
     </KuraCard>
-    <ConfirmButton label="豆カードを削除" onConfirm={()=>void deleteBean(bean.id).then(()=>navigate("/beans"))}/>
+    <ConfirmButton label={`豆カードと紐づく${brews.length}件の一杯を削除`} onConfirm={()=>void deleteBrewsByBean(bean.id).then(()=>deleteBean(bean.id)).then(()=>navigate("/beans"))}/>
   </div>;
 }

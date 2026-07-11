@@ -1,3 +1,5 @@
+import { confirmDiscardChanges } from "./navigationGuard";
+
 export type Route =
   | { name: "beans" }
   | { name: "bean-new" }
@@ -14,15 +16,10 @@ export type Route =
 
 export function parseRoute(): Route {
   const p = window.location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
-
   if (p[0] === "beans" && p[1] === "new") return { name: "bean-new" };
   if (p[0] === "beans" && p[1] && p[2] === "edit") return { name: "bean-edit", id: p[1] };
-  if (p[0] === "beans" && p[1] && p[2] === "brews" && p[3] === "new") {
-    return { name: "brew-new", beanId: p[1] };
-  }
-  if (p[0] === "beans" && p[1] && p[2] === "brews" && p[3]) {
-    return { name: "brew-edit", beanId: p[1], brewId: p[3] };
-  }
+  if (p[0] === "beans" && p[1] && p[2] === "brews" && p[3] === "new") return { name: "brew-new", beanId: p[1] };
+  if (p[0] === "beans" && p[1] && p[2] === "brews" && p[3]) return { name: "brew-edit", beanId: p[1], brewId: p[3] };
   if (p[0] === "beans" && p[1]) return { name: "bean-detail", id: p[1] };
   if (p[0] === "cafe" && p[1] === "new") return { name: "cafe-new" };
   if (p[0] === "cafe" && p[1] && p[2] === "edit") return { name: "cafe-edit", id: p[1] };
@@ -34,5 +31,6 @@ export function parseRoute(): Route {
 }
 
 export function navigate(path: string) {
+  if (!confirmDiscardChanges()) return;
   window.location.hash = path.startsWith("/") ? path : `/${path}`;
 }

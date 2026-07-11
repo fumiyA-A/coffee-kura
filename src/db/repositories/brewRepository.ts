@@ -12,3 +12,8 @@ export async function getBrewsByBean(beanId: string): Promise<Brew[]> {
 export const getBrew = (id: string) => getById<Brew>(STORES.brews, id);
 export const saveBrew = (brew: Brew) => put(STORES.brews, brew);
 export const deleteBrew = (id: string) => remove(STORES.brews, id);
+export async function deleteBrewsByBean(beanId: string): Promise<number> {
+  const rows = await getBrewsByBean(beanId);
+  await Promise.all(rows.map((row) => remove(STORES.brews, row.id)));
+  return rows.length;
+}

@@ -4,24 +4,27 @@ import type { Bean } from "../models/Bean";
 import type { Brew } from "../models/Brew";
 import type { CafeCup } from "../models/CafeCup";
 import type { Cafe } from "../models/Cafe";
+import type { Roaster } from "../models/Roaster";
 
 type Backup = {
-  version: 2;
+  version: 3;
   exportedAt: string;
   beans: Bean[];
   brews: Brew[];
   cafeCups: CafeCup[];
   cafes: Cafe[];
+  roasters: Roaster[];
 };
 
 export async function exportBackup(): Promise<void> {
   const payload: Backup = {
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     beans: await getAll<Bean>(STORES.beans),
     brews: await getAll<Brew>(STORES.brews),
     cafeCups: await getAll<CafeCup>(STORES.cafeCups),
     cafes: await getAll<Cafe>(STORES.cafes),
+    roasters: await getAll<Roaster>(STORES.roasters),
   };
   const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -32,24 +35,15 @@ export async function exportBackup(): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
-
 export async function importBackup(file: File): Promise<void> {
-  const parsed = JSON.parse(await file.text()) as {
-    version?: 1 | 2;
-    beans?: Bean[];
-    brews?: Brew[];
-    cafeCups?: CafeCup[];
-    cafes?: Cafe[];
-  };
-  if (parsed.version !== 1 && parsed.version !== 2) {
-    throw new Error("未対応のバックアップ形式です。");
-  }
-
+  const parsed = JSON.parse(await file.text()) as Partial<Backup> & { version?: 1|2|3 };
+  if (![1,2,3].includes(parsed.version ?? 0)) throw new Error("未対応のバックアップ形式です。");
   await clearAllStores();
   await Promise.all([
-    ...(parsed.beans ?? []).map((item) => put(STORES.beans, item)),
-    ...(parsed.brews ?? []).map((item) => put(STORES.brews, item)),
-    ...(parsed.cafeCups ?? []).map((item) => put(STORES.cafeCups, item)),
-    ...(parsed.cafes ?? []).map((item) => put(STORES.cafes, item)),
+    ...(parsed.beans ?? []).map((x) => put(STORES.beans, x)),
+    ...(parsed.brews ?? []).map((x) => put(STORES.brews, x)),
+    ...(parsed.cafeCups ?? []).map((x) => put(STORES.cafeCups, x)),
+    ...(parsed.cafes ?? []).map((x) => put(STORES.cafes, x)),
+    ...(parsed.roasters ?? []).map((x) => put(STORES.roasters, x)),
   ]);
 }
