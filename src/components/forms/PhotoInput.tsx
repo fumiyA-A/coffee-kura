@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useObjectUrl } from "../../hooks/useObjectUrl";
 import { compressImages } from "../../services/imageService";
 
 function Preview({
@@ -14,12 +15,7 @@ function Preview({
   onDelete: () => void;
   onCover: () => void;
 }) {
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    const next = URL.createObjectURL(blob);
-    setUrl(next);
-    return () => URL.revokeObjectURL(next);
-  }, [blob]);
+  const url = useObjectUrl(blob);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-[#332a20]">

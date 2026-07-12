@@ -16,7 +16,7 @@ import { OriginInput } from "../components/forms/OriginInput";
 import { DateInput } from "../components/forms/DateInput";
 import { normalizePhotos } from "../services/imageService";
 import { clearFormDirty, setFormDirty } from "../app/navigationGuard";
-import { showToast } from "../components/ui/Toast";
+import { showToast } from "../services/toastService";
 
 export function CafeFormPage({ cafeCupId }: { cafeCupId?: string }) {
   const [drinkName,setDrinkName]=useState(""); const [cafes,setCafes]=useState<Array<{id:string;name:string;locationName?:string}>>([]);

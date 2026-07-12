@@ -16,8 +16,14 @@ export function useBeans() {
   }, []);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    let active = true;
+    getAllBeans().then((rows) => {
+      if (!active) return;
+      setBeans(rows);
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, []);
 
   return { beans, loading, reload };
 }

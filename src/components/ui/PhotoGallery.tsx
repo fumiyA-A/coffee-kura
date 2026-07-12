@@ -1,12 +1,7 @@
-import { useEffect, useState } from "react";
+import { useObjectUrl } from "../../hooks/useObjectUrl";
 
 function GalleryImage({ blob, alt }: { blob: Blob; alt: string }) {
-  const [url, setUrl] = useState<string>();
-  useEffect(() => {
-    const next = URL.createObjectURL(blob);
-    setUrl(next);
-    return () => URL.revokeObjectURL(next);
-  }, [blob]);
+  const url = useObjectUrl(blob);
   return url ? <img src={url} alt={alt} className="h-64 min-w-[88%] snap-center rounded-[1.75rem] object-cover" /> : null;
 }
 

@@ -16,7 +16,7 @@ import { OriginInput } from "../components/forms/OriginInput";
 import { DateInput } from "../components/forms/DateInput";
 import { getAllRoasters, findOrCreateRoaster } from "../db/repositories/roasterRepository";
 import { setFormDirty, clearFormDirty } from "../app/navigationGuard";
-import { showToast } from "../components/ui/Toast";
+import { showToast } from "../services/toastService";
 
 export function BeanFormPage({ beanId }: { beanId?: string }) {
   const [name,setName]=useState(""); const [roaster,setRoaster]=useState(""); const [roasters,setRoasters]=useState<Array<{id:string;name:string}>>([]); const [selectedRoaster,setSelectedRoaster]=useState("");

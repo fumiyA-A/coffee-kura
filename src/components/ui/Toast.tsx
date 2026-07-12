@@ -1,9 +1,5 @@
 import { useEffect, useState } from "react";
 
-export function showToast(message: string) {
-  window.dispatchEvent(new CustomEvent("coffee-kura-toast", { detail: message }));
-}
-
 export function Toast() {
   const [message, setMessage] = useState("");
   useEffect(() => {

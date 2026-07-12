@@ -3,6 +3,7 @@ import { parseRoute, type Route } from "./routes";
 import { AppLayout } from "./AppLayout";
 import { initializeDatabase } from "../db/database";
 import { migrateLegacyData } from "../services/migrationService";
+import { ensureDefaultBrewMethods } from "../db/repositories/brewMethodRepository";
 import { BeansPage } from "../pages/BeansPage";
 import { BeanFormPage } from "../pages/BeanFormPage";
 import { BeanDetailPage } from "../pages/BeanDetailPage";
@@ -12,12 +13,18 @@ import { CafeFormPage } from "../pages/CafeFormPage";
 import { CafeDetailPage } from "../pages/CafeDetailPage";
 import { InsightsPage } from "../pages/InsightsPage";
 import { SettingsPage } from "../pages/SettingsPage";
+import { RecipeTemplatesPage } from "../pages/RecipeTemplatesPage";
+import { RecipeTemplateFormPage } from "../pages/RecipeTemplateFormPage";
+import { BrewMethodsPage } from "../pages/BrewMethodsPage";
 
 export default function App() {
   const [route, setRoute] = useState<Route>(parseRoute());
 
   useEffect(() => {
-    void initializeDatabase().then(() => migrateLegacyData());
+    void initializeDatabase().then(async () => {
+      await migrateLegacyData();
+      await ensureDefaultBrewMethods();
+    });
     if (!window.location.hash) window.location.hash = "/beans";
     const handler = () => setRoute(parseRoute());
     window.addEventListener("hashchange", handler);
@@ -29,7 +36,7 @@ export default function App() {
     case "bean-new": page = <BeanFormPage />; break;
     case "bean-edit": page = <BeanFormPage beanId={route.id} />; break;
     case "bean-detail": page = <BeanDetailPage beanId={route.id} />; break;
-    case "brew-new": page = <BrewFormPage beanId={route.beanId} />; break;
+    case "brew-new": page = <BrewFormPage beanId={route.beanId} sourceBrewId={route.sourceBrewId} />; break;
     case "brew-edit": page = <BrewFormPage beanId={route.beanId} brewId={route.brewId} />; break;
     case "cafe-new": page = <CafeFormPage />; break;
     case "cafe-edit": page = <CafeFormPage cafeCupId={route.id} />; break;
@@ -37,6 +44,10 @@ export default function App() {
     case "cafe": page = <CafePage />; break;
     case "insights": page = <InsightsPage />; break;
     case "settings": page = <SettingsPage />; break;
+    case "recipe-templates": page = <RecipeTemplatesPage />; break;
+    case "recipe-template-new": page = <RecipeTemplateFormPage sourceBrewId={route.sourceBrewId} returnBeanId={route.returnBeanId} />; break;
+    case "recipe-template-edit": page = <RecipeTemplateFormPage templateId={route.id} />; break;
+    case "brew-methods": page = <BrewMethodsPage />; break;
     default: page = <BeansPage />;
   }
 

@@ -27,7 +27,7 @@ jobs:
           node-version: 22
           
       - name: Install dependencies
-        run: npm install --registry=https://registry.npmjs.org/ --no-audit --no-fund
+        run: npm ci --registry=https://registry.npmjs.org/ --no-audit --no-fund
 
       - name: Build
         run: npm run build

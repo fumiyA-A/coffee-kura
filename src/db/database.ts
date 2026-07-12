@@ -1,5 +1,5 @@
 const DATABASE_NAME = "coffee-kura";
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 export const STORES = {
   beans: "beans",
@@ -7,7 +7,9 @@ export const STORES = {
   cafeCups: "cafe-cups",
   cafes: "cafes",
   roasters: "roasters",
-  settings: "settings"
+  settings: "settings",
+  brewMethods: "brew-methods",
+  brewRecipeTemplates: "brew-recipe-templates",
 } as const;
 
 let databasePromise: Promise<IDBDatabase> | undefined;
@@ -51,10 +53,15 @@ export async function requestFromStore<T>(
 
 export async function clearAllStores(): Promise<void> {
   const db = await initializeDatabase();
-  await Promise.all(Object.values(STORES).map((storeName) => new Promise<void>((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const req = tx.objectStore(storeName).clear();
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  })));
+  await Promise.all(
+    Object.values(STORES).map(
+      (storeName) =>
+        new Promise<void>((resolve, reject) => {
+          const tx = db.transaction(storeName, "readwrite");
+          const req = tx.objectStore(storeName).clear();
+          req.onsuccess = () => resolve();
+          req.onerror = () => reject(req.error);
+        }),
+    ),
+  );
 }

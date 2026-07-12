@@ -14,8 +14,14 @@ export function useData<T>(loader: () => Promise<T>) {
   }, [loader]);
 
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    let active = true;
+    loader().then((value) => {
+      if (!active) return;
+      setData(value);
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [loader]);
 
   return { data, loading, reload };
 }
